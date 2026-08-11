@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitHub Pages entry test</title>
+</head>
+<body>
+  <p id="summary">Waiting for Pages entry point…</p>
+  <iframe id="entry" src="../index.html" title="Pages entry point"></iframe>
+  <script>
+    const frame = document.querySelector('#entry');
+    frame.addEventListener('load', () => {
+      const summary = document.querySelector('#summary');
+      const path = frame.contentWindow.location.pathname;
+      const title = frame.contentDocument.title;
+      const passed = path.endsWith('/renaissance-psychiatry-responsive.html')
+        && title.startsWith('Renaissance Psychiatry LLC');
+      summary.dataset.complete = 'true';
+      summary.textContent = passed
+        ? '1 passed, 0 failed'
+        : `0 passed, 1 failed — landed on ${path || '(empty path)'}`;
+    });
+  </script>
+</body>
+</html>
