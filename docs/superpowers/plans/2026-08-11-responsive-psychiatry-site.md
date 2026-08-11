@@ -4,9 +4,9 @@
 
 **Goal:** Build a maintainable, standalone Renaissance Psychiatry landing page that preserves the approved visual direction, works across phone through desktop widths, and uses stable matching Unsplash photography.
 
-**Architecture:** A single semantic HTML document owns the content, component styling, responsive breakpoints, and small progressive-enhancement script. A dependency-free Node test reads the built file and verifies critical structure, accessibility attributes, image policy, responsive rules, and interaction hooks before browser-level visual checks.
+**Architecture:** A single semantic HTML document owns the content, component styling, responsive breakpoints, and small progressive-enhancement script. A dependency-free browser harness loads the real page in an iframe, exercises its rendered DOM and interactions, and reports pass/fail results before responsive visual checks.
 
-**Tech Stack:** HTML5, CSS3, vanilla JavaScript, Node.js built-in test runner, Unsplash CDN images
+**Tech Stack:** HTML5, CSS3, vanilla JavaScript, browser-native test harness, Unsplash CDN images
 
 ## Global Constraints
 
@@ -20,81 +20,86 @@
 
 ---
 
-### Task 1: Add the structural and responsive acceptance test
+### Task 1: Add the real-browser acceptance harness
 
 **Files:**
-- Create: `tests/site.test.mjs`
-- Test: `tests/site.test.mjs`
+- Create: `tests/site-browser-test.html`
+- Test: `tests/site-browser-test.html`
 
 **Interfaces:**
-- Consumes: the UTF-8 document at `renaissance-psychiatry-responsive.html`
-- Produces: dependency-free `node:test` acceptance checks for later implementation tasks
+- Consumes: the rendered document at `../renaissance-psychiatry-responsive.html`
+- Produces: visible pass/fail rows in `#results` and a summary in `#summary` after exercising the real page DOM
 
-- [ ] **Step 1: Write the failing structural test**
+- [ ] **Step 1: Write the browser harness**
+
+```html
+<iframe id="site" src="../renaissance-psychiatry-responsive.html" title="Site under test"></iframe>
+<ol id="results"></ol>
+<p id="summary">Waiting for site…</p>
+<script>
+  const tests = [];
+  const check = (name, fn) => tests.push({ name, fn });
+  const assert = (condition, message) => { if (!condition) throw new Error(message); };
+
+  check('renders required landmarks and sections', doc => {
+    assert(doc.querySelector('header'), 'missing header');
+    assert(doc.querySelector('main'), 'missing main');
+    assert(doc.querySelector('footer'), 'missing footer');
+    ['top','about','services','conditions','providers','patients','book','contact']
+      .forEach(id => assert(doc.getElementById(id), `missing #${id}`));
+  });
+
+  check('uses accessible stable photographs', doc => {
+    const images = [...doc.images];
+    assert(images.length >= 5, 'expected at least five photographs');
+    images.forEach(image => {
+      assert(image.src.startsWith('https://images.unsplash.com/'), 'image is not a stable Unsplash URL');
+      assert(image.alt.trim(), 'image has no alt text');
+    });
+  });
+</script>
+```
+
+- [ ] **Step 2: Serve and open the harness to verify RED**
+
+Run: `python3 -m http.server 4173`
+
+Open: `http://127.0.0.1:4173/tests/site-browser-test.html`
+
+Expected: FAIL because `renaissance-psychiatry-responsive.html` returns 404 and required landmarks are missing.
+
+- [ ] **Step 3: Add real interaction checks**
 
 ```js
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-
-const pageUrl = new URL('../renaissance-psychiatry-responsive.html', import.meta.url);
-const html = await readFile(pageUrl, 'utf8');
-
-test('contains the complete semantic page structure', () => {
-  assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
-  for (const landmark of ['<header', '<main', '<footer']) assert.ok(html.includes(landmark));
-  for (const id of ['top', 'about', 'services', 'conditions', 'providers', 'patients', 'book', 'contact']) {
-    assert.match(html, new RegExp(`id="${id}"`));
-  }
+check('opens and closes the mobile menu', doc => {
+  const button = doc.querySelector('#menu-toggle');
+  const menu = doc.querySelector('#mobile-menu');
+  assert(button && menu, 'mobile menu controls missing');
+  button.click();
+  assert(button.getAttribute('aria-expanded') === 'true' && !menu.hidden, 'menu did not open');
+  doc.dispatchEvent(new doc.defaultView.KeyboardEvent('keydown', { key:'Escape', bubbles:true }));
+  assert(button.getAttribute('aria-expanded') === 'false' && menu.hidden, 'Escape did not close menu');
 });
 
-test('declares responsive and overflow protections', () => {
-  assert.match(html, /@media \(max-width: 900px\)/);
-  assert.match(html, /@media \(max-width: 640px\)/);
-  assert.match(html, /overflow-x:\s*(?:clip|hidden)/);
-  assert.match(html, /clamp\(/);
+check('switches care tabs and toggles an FAQ', doc => {
+  const tabs = [...doc.querySelectorAll('[role="tab"]')];
+  assert(tabs.length === 2, 'care tabs missing');
+  tabs[1].click();
+  assert(tabs[1].getAttribute('aria-selected') === 'true', 'telehealth tab did not activate');
+  const faq = doc.querySelector('.faq-question');
+  faq.click();
+  assert(faq.getAttribute('aria-expanded') === 'true', 'FAQ did not open');
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [ ] **Step 4: Complete the harness runner and retain the expected failure**
 
-Run: `node --test tests/site.test.mjs`
-
-Expected: FAIL with `ENOENT` because `renaissance-psychiatry-responsive.html` does not exist.
-
-- [ ] **Step 3: Add image and interaction acceptance checks**
-
-```js
-test('uses stable, accessible Unsplash photographs', () => {
-  const images = [...html.matchAll(/<img\b[^>]*>/g)].map(match => match[0]);
-  assert.ok(images.length >= 5);
-  for (const image of images) {
-    assert.match(image, /src="https:\/\/images\.unsplash\.com\//);
-    assert.match(image, /alt="[^"]+"/);
-  }
-  assert.ok(images.slice(1).every(image => /loading="lazy"/.test(image)));
-});
-
-test('contains accessible mobile menu, tabs, and FAQs', () => {
-  assert.match(html, /id="menu-toggle"[^>]*aria-expanded="false"/);
-  assert.match(html, /id="mobile-menu"/);
-  assert.match(html, /role="tablist"/);
-  assert.ok((html.match(/role="tab"/g) ?? []).length >= 2);
-  assert.ok((html.match(/class="faq-question"/g) ?? []).length >= 6);
-  assert.match(html, /event\.key === ['"]Escape['"]/);
-});
-```
-
-- [ ] **Step 4: Run the complete test file and retain the expected failure**
-
-Run: `node --test tests/site.test.mjs`
-
-Expected: FAIL with `ENOENT`, confirming both test groups are active before implementation.
+On iframe load, run every check against `iframe.contentDocument`, append `.pass` or `.fail` results, and set `#summary` to `N passed, M failed`. Reload the harness and confirm at least one visible failure before implementation.
 
 - [ ] **Step 5: Commit the acceptance test**
 
 ```bash
-git add tests/site.test.mjs
+git add tests/site-browser-test.html
 git commit -m "test: define responsive site acceptance checks"
 ```
 
@@ -102,7 +107,7 @@ git commit -m "test: define responsive site acceptance checks"
 
 **Files:**
 - Create: `renaissance-psychiatry-responsive.html`
-- Test: `tests/site.test.mjs`
+- Test: `tests/site-browser-test.html`
 
 **Interfaces:**
 - Consumes: section copy and visual tokens from the approved specification and supplied export
@@ -150,9 +155,9 @@ Add one eager hero image and four lazy age-group images using explicit `https://
 
 - [ ] **Step 4: Run structural tests**
 
-Run: `node --test tests/site.test.mjs`
+Reload: `http://127.0.0.1:4173/tests/site-browser-test.html`
 
-Expected: the semantic structure and image tests PASS; interaction/responsive checks may still fail until Tasks 3 and 4.
+Expected: semantic structure and image checks PASS; interaction checks may still fail until Task 3.
 
 - [ ] **Step 5: Commit the desktop page**
 
@@ -165,7 +170,7 @@ git commit -m "feat: build standalone psychiatry landing page"
 
 **Files:**
 - Modify: `renaissance-psychiatry-responsive.html`
-- Test: `tests/site.test.mjs`
+- Test: `tests/site-browser-test.html`
 
 **Interfaces:**
 - Consumes: `#menu-toggle`, `#mobile-menu`, `[role="tab"]`, `[role="tabpanel"]`, and `.faq-question` elements from Task 2
@@ -227,7 +232,7 @@ document.querySelectorAll('.faq-question').forEach(button => {
 
 - [ ] **Step 4: Run interaction acceptance tests**
 
-Run: `node --test tests/site.test.mjs`
+Reload: `http://127.0.0.1:4173/tests/site-browser-test.html`
 
 Expected: interaction checks PASS; only missing responsive declarations, if any, remain failing.
 
@@ -242,7 +247,7 @@ git commit -m "feat: add accessible site interactions"
 
 **Files:**
 - Modify: `renaissance-psychiatry-responsive.html`
-- Modify: `tests/site.test.mjs`
+- Modify: `tests/site-browser-test.html`
 
 **Interfaces:**
 - Consumes: all page components and interaction hooks from Tasks 2 and 3
@@ -279,9 +284,9 @@ Ensure `img, svg { max-width:100%; }`, grid children use `min-width:0`, long ema
 
 - [ ] **Step 3: Run all automated checks**
 
-Run: `node --test tests/site.test.mjs`
+Reload: `http://127.0.0.1:4173/tests/site-browser-test.html`
 
-Expected: all tests PASS.
+Expected: every visible harness result is PASS and the summary reports zero failures.
 
 Run: `git diff --check`
 
@@ -294,6 +299,6 @@ Open the page at widths 390px, 768px, 1024px, and 1440px. At each width confirm 
 - [ ] **Step 5: Commit the responsive and verified result**
 
 ```bash
-git add renaissance-psychiatry-responsive.html tests/site.test.mjs
+git add renaissance-psychiatry-responsive.html tests/site-browser-test.html
 git commit -m "feat: complete responsive psychiatry website"
 ```

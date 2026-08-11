@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Renaissance Psychiatry browser acceptance tests</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { max-width: 980px; margin: 0 auto; padding: 24px; background: #f4f6fb; color: #141b41; }
+    h1 { margin-top: 0; }
+    #summary { padding: 14px 18px; border-radius: 10px; background: #fff; font-weight: 700; }
+    #summary.pass { background: #dff8ee; color: #075f45; }
+    #summary.fail { background: #fee9e8; color: #8c1d18; }
+    #results { display: grid; gap: 8px; padding: 0; list-style: none; }
+    #results li { padding: 12px 14px; border-radius: 8px; background: #fff; }
+    #results .pass { border-left: 5px solid #10a978; }
+    #results .fail { border-left: 5px solid #d94b45; }
+    #site { width: 390px; height: 720px; border: 1px solid #ccd4e5; background: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Browser acceptance tests</h1>
+  <p id="summary">Waiting for site…</p>
+  <ol id="results"></ol>
+  <iframe id="site" src="../renaissance-psychiatry-responsive.html" title="Renaissance Psychiatry site under test"></iframe>
+
+  <script>
+    const tests = [];
+    const check = (name, run) => tests.push({ name, run });
+    const assert = (condition, message) => {
+      if (!condition) throw new Error(message);
+    };
+
+    check('renders required semantic landmarks and sections', async (doc) => {
+      assert(doc.querySelector('header'), 'missing header');
+      assert(doc.querySelector('main'), 'missing main');
+      assert(doc.querySelector('footer'), 'missing footer');
+      for (const id of ['top', 'about', 'services', 'conditions', 'providers', 'patients', 'book', 'contact']) {
+        assert(doc.getElementById(id), `missing #${id}`);
+      }
+    });
+
+    check('uses stable, accessible Unsplash photographs', async (doc) => {
+      const images = [...doc.images];
+      assert(images.length >= 5, 'expected at least five photographs');
+      images.forEach((image, index) => {
+        assert(image.src.startsWith('https://images.unsplash.com/'), `image ${index + 1} is not a stable Unsplash URL`);
+        assert(image.alt.trim(), `image ${index + 1} has no alt text`);
+        if (index > 0) assert(image.loading === 'lazy', `image ${index + 1} should lazy-load`);
+      });
+    });
+
+    check('opens and closes the mobile menu', async (doc) => {
+      const button = doc.querySelector('#menu-toggle');
+      const menu = doc.querySelector('#mobile-menu');
+      assert(button && menu, 'mobile menu controls missing');
+      assert(button.getAttribute('aria-expanded') === 'false' && menu.hidden, 'menu should start closed');
+      button.click();
+      assert(button.getAttribute('aria-expanded') === 'true' && !menu.hidden, 'menu did not open');
+      doc.dispatchEvent(new doc.defaultView.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      assert(button.getAttribute('aria-expanded') === 'false' && menu.hidden, 'Escape did not close menu');
+    });
+
+    check('switches care tabs with pointer and keyboard', async (doc) => {
+      const tabs = [...doc.querySelectorAll('[role="tab"]')];
+      assert(tabs.length === 2, 'expected two care tabs');
+      tabs[1].click();
+      assert(tabs[1].getAttribute('aria-selected') === 'true', 'telehealth tab did not activate');
+      assert(!doc.getElementById(tabs[1].getAttribute('aria-controls')).hidden, 'telehealth panel stayed hidden');
+      tabs[1].dispatchEvent(new doc.defaultView.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      assert(tabs[0].getAttribute('aria-selected') === 'true', 'ArrowLeft did not return to in-person tab');
+    });
+
+    check('toggles an FAQ answer and its ARIA state', async (doc) => {
+      const button = doc.querySelector('.faq-question');
+      assert(button, 'FAQ button missing');
+      const answer = doc.getElementById(button.getAttribute('aria-controls'));
+      assert(button.getAttribute('aria-expanded') === 'false' && answer.hidden, 'FAQ should start closed');
+      button.click();
+      assert(button.getAttribute('aria-expanded') === 'true' && !answer.hidden, 'FAQ did not open');
+      button.click();
+      assert(button.getAttribute('aria-expanded') === 'false' && answer.hidden, 'FAQ did not close');
+    });
+
+    check('has no horizontal overflow at phone width', async (doc, frame) => {
+      frame.style.width = '390px';
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      assert(doc.documentElement.scrollWidth <= doc.documentElement.clientWidth + 1,
+        `phone overflow: ${doc.documentElement.scrollWidth}px > ${doc.documentElement.clientWidth}px`);
+      const toggle = doc.querySelector('#menu-toggle');
+      assert(doc.defaultView.getComputedStyle(toggle).display !== 'none', 'mobile menu button is hidden at 390px');
+    });
+
+    const frame = document.querySelector('#site');
+    frame.addEventListener('load', async () => {
+      const results = document.querySelector('#results');
+      const summary = document.querySelector('#summary');
+      const doc = frame.contentDocument;
+      let passed = 0;
+      let failed = 0;
+
+      for (const test of tests) {
+        const row = document.createElement('li');
+        try {
+          await test.run(doc, frame);
+          passed += 1;
+          row.className = 'pass';
+          row.textContent = `PASS — ${test.name}`;
+        } catch (error) {
+          failed += 1;
+          row.className = 'fail';
+          row.textContent = `FAIL — ${test.name}: ${error.message}`;
+        }
+        results.append(row);
+      }
+
+      summary.className = failed ? 'fail' : 'pass';
+      summary.textContent = `${passed} passed, ${failed} failed`;
+      summary.dataset.complete = 'true';
+    }, { once: true });
+  </script>
+</body>
+</html>
