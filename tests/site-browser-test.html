@@ -50,6 +50,21 @@
       });
     });
 
+    check('describes the adolescent photograph as student or teen imagery', async (doc) => {
+      const card = [...doc.querySelectorAll('.age-card')]
+        .find(item => item.querySelector('h3')?.textContent.trim() === 'Adolescents');
+      assert(card, 'adolescent card missing');
+      assert(/student|teen|adolesc/i.test(card.querySelector('img')?.alt ?? ''),
+        'adolescent image description does not match its life stage');
+    });
+
+    check('gives the hero photograph an accurate telehealth description', async (doc) => {
+      const hero = doc.querySelector('.hero-image img');
+      assert(hero, 'hero photograph missing');
+      assert(/phone|smartphone|telehealth|video/i.test(hero.alt),
+        'hero alt text does not describe the clinician using a phone');
+    });
+
     check('opens and closes the mobile menu', async (doc) => {
       const button = doc.querySelector('#menu-toggle');
       const menu = doc.querySelector('#mobile-menu');
