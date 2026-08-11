@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Renaissance Psychiatry LLC — Psychiatric care for every stage of life</title>
+  <meta name="description" content="Outpatient psychiatric evaluations, medication management and psychotherapy for children, adolescents, adults and older adults.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #141b41;
+      --blue: #306bac;
+      --sky: #6f9ceb;
+      --aqua: #4ce0d2;
+      --ink: #141b41;
+      --muted: #4a5578;
+      --pale: #f1f4fb;
+      --line: #e2e8f5;
+      --white: #fff;
+      --page: #f8f9fc;
+      --shadow: 0 22px 55px rgba(20, 27, 65, 0.13);
+      --radius-lg: 28px;
+      --radius-md: 20px;
+      --content: 1320px;
+      --gutter: clamp(20px, 4vw, 56px);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background: var(--page);
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body.menu-open { overflow: hidden; }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    [hidden] { display: none !important; }
+    :focus-visible { outline: 3px solid var(--aqua); outline-offset: 3px; }
+    section[id] { scroll-margin-top: 96px; }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      transform: translateY(-150%);
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: var(--white);
+      color: var(--navy);
+      font-weight: 700;
+      transition: transform .18s ease;
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    .page-shell {
+      width: min(100%, 1440px);
+      margin: 0 auto;
+      overflow: clip;
+      background: var(--white);
+      box-shadow: 0 0 60px rgba(20, 27, 65, .08);
+    }
+    .container { width: min(100%, var(--content)); margin-inline: auto; padding-inline: var(--gutter); }
+    .section { padding-block: clamp(68px, 8vw, 112px); }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--blue);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { width: 20px; height: 2px; background: currentColor; content: ""; }
+    .section-title {
+      margin: 12px 0 0;
+      color: var(--navy);
+      font-size: clamp(2.1rem, 4.3vw, 3.2rem);
+      line-height: 1.08;
+      letter-spacing: -.035em;
+    }
+    .section-copy { margin: 18px 0 0; max-width: 58ch; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.72; }
+    .btn {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 14px 24px;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 750;
+      line-height: 1.15;
+      transition: transform .18s ease, background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--aqua); color: var(--navy); box-shadow: 0 12px 30px rgba(76, 224, 210, .2); }
+    .btn-primary:hover { background: var(--white); }
+    .btn-outline { border-color: rgba(255,255,255,.32); color: var(--white); }
+    .btn-outline:hover { border-color: var(--aqua); color: var(--aqua); }
+    .btn-blue { background: var(--blue); color: var(--white); }
+    .btn-blue:hover { background: var(--navy); }
+
+    .notice { background: #1b2757; color: #c8fff9; border-bottom: 1px solid rgba(76,224,210,.2); }
+    .notice .container {
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 7px 18px;
+      padding-block: 9px;
+      font-size: .9rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    .notice-status { display: inline-flex; align-items: center; gap: 9px; }
+    .notice-status::before { width: 7px; height: 7px; border-radius: 50%; background: var(--aqua); content: ""; }
+    .notice a { color: var(--aqua); font-weight: 800; }
+
+    .header-shell {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(20, 27, 65, .94);
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(18px);
+    }
+    .nav-row { min-height: 80px; display: flex; align-items: center; gap: 26px; }
+    .brand { min-width: 0; display: inline-flex; align-items: center; gap: 12px; color: var(--white); }
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(145deg, var(--blue), var(--aqua));
+    }
+    .brand-mark svg { width: 26px; height: 26px; }
+    .brand-copy { display: grid; line-height: 1.12; }
+    .brand-name { font-size: 1.08rem; font-weight: 800; letter-spacing: -.025em; }
+    .brand-subtitle { color: #9eadd2; font-size: .64rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+    .desktop-nav { display: flex; align-items: center; gap: clamp(16px, 1.8vw, 28px); margin-left: auto; }
+    .desktop-nav a { min-height: 44px; display: inline-flex; align-items: center; color: #dce3f5; font-size: .92rem; font-weight: 600; }
+    .desktop-nav a:hover { color: var(--aqua); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .header-actions .btn { min-height: 44px; padding: 11px 16px; font-size: .88rem; }
+    .menu-toggle {
+      width: 48px;
+      height: 48px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      border: 1px solid rgba(255,255,255,.26);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--white);
+      cursor: pointer;
+    }
+    .menu-toggle-lines, .menu-toggle-lines::before, .menu-toggle-lines::after {
+      width: 22px;
+      height: 2px;
+      display: block;
+      border-radius: 2px;
+      background: currentColor;
+      transition: transform .18s ease, opacity .18s ease;
+      content: "";
+    }
+    .menu-toggle-lines { position: relative; }
+    .menu-toggle-lines::before { position: absolute; top: -7px; }
+    .menu-toggle-lines::after { position: absolute; top: 7px; }
+    .menu-toggle[aria-expanded="true"] .menu-toggle-lines { background: transparent; }
+    .menu-toggle[aria-expanded="true"] .menu-toggle-lines::before { top: 0; transform: rotate(45deg); }
+    .menu-toggle[aria-expanded="true"] .menu-toggle-lines::after { top: 0; transform: rotate(-45deg); }
+    .mobile-menu { border-top: 1px solid rgba(255,255,255,.1); background: var(--navy); }
+    .mobile-menu-inner { display: grid; gap: 4px; padding-block: 16px 22px; }
+    .mobile-menu a { min-height: 48px; display: flex; align-items: center; padding: 10px 12px; border-radius: 10px; color: #eaf0ff; font-weight: 650; }
+    .mobile-menu a:hover { background: rgba(255,255,255,.07); color: var(--aqua); }
+    .mobile-menu-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+
+    .hero { position: relative; overflow: hidden; background: var(--navy); color: var(--white); }
+    .hero::before {
+      position: absolute;
+      width: 560px;
+      height: 560px;
+      right: -180px;
+      top: -220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(48,107,172,.48), rgba(48,107,172,0) 67%);
+      content: "";
+    }
+    .hero-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+      gap: clamp(44px, 6vw, 84px);
+      align-items: center;
+      padding-block: clamp(66px, 8vw, 116px);
+    }
+    .hero-badge { display: inline-flex; padding: 8px 15px; border: 1px solid rgba(111,156,235,.45); border-radius: 999px; color: #91b8ff; font-size: .76rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .hero-title {
+      margin: 24px 0 0;
+      max-width: 14ch;
+      font-size: clamp(3.4rem, 6vw, 5.15rem);
+      line-height: 1.01;
+      letter-spacing: -.052em;
+      text-wrap: balance;
+    }
+    .hero-title span { color: var(--aqua); }
+    .hero-copy { margin: 26px 0 0; max-width: 53ch; color: #c3cde6; font-size: clamp(1.02rem, 1.8vw, 1.18rem); line-height: 1.72; }
+    .hero-actions, .booking-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+    .stat-grid { width: fit-content; display: grid; grid-template-columns: repeat(3, auto); gap: 22px 30px; margin-top: 46px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,.13); }
+    .stat-value { margin: 0; font-size: 1.55rem; font-weight: 800; letter-spacing: -.03em; }
+    .stat-label { margin: 4px 0 0; color: #93a2c6; font-size: .82rem; line-height: 1.45; }
+    .hero-visual { position: relative; min-width: 0; padding-bottom: 30px; }
+    .image-frame { overflow: hidden; background: #dfe7f5; }
+    .hero-image { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius-lg); }
+    .continuity-card {
+      position: absolute;
+      left: -32px;
+      bottom: 0;
+      max-width: 260px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--white);
+      color: var(--navy);
+      box-shadow: 0 24px 55px rgba(5, 10, 35, .4);
+      font-size: .9rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+    .continuity-icon { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: var(--sky); }
+    .continuity-icon svg { width: 22px; height: 22px; }
+
+    .care-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(36px, 6vw, 78px); align-items: start; }
+    .care-tabs { width: fit-content; display: flex; gap: 5px; margin-top: 28px; padding: 6px; border-radius: 14px; background: var(--pale); }
+    .care-tab { min-height: 44px; padding: 10px 20px; border: 0; border-radius: 10px; background: transparent; color: var(--navy); cursor: pointer; font-weight: 750; }
+    .care-tab[aria-selected="true"] { background: var(--navy); color: var(--white); }
+    .care-panel { min-height: 316px; padding: clamp(28px, 4vw, 44px); border-radius: 24px; background: var(--pale); }
+    .care-panel h3 { margin: 0; font-size: clamp(1.45rem, 2.8vw, 1.8rem); letter-spacing: -.025em; }
+    .care-panel > p { margin: 14px 0 24px; color: var(--muted); font-size: 1.04rem; line-height: 1.68; }
+    .check-list { display: grid; gap: 13px; margin: 0; padding: 0; list-style: none; }
+    .check-list li { display: flex; align-items: flex-start; gap: 12px; line-height: 1.55; }
+    .check-list li::before { width: 20px; height: 20px; flex: 0 0 auto; margin-top: 2px; border-radius: 6px; background: var(--aqua); box-shadow: inset 0 0 0 6px var(--aqua); content: "✓"; color: var(--navy); font-size: .75rem; font-weight: 900; line-height: 20px; text-align: center; }
+
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 36px; }
+    .text-link { min-height: 44px; display: inline-flex; align-items: center; color: var(--blue); font-weight: 800; }
+    .text-link:hover { color: #174e8e; }
+    .services-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .service-card { min-width: 0; padding: 28px 24px 31px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--white); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .service-card:hover { transform: translateY(-5px); border-color: var(--sky); box-shadow: var(--shadow); }
+    .service-number { width: 45px; height: 45px; display: grid; place-items: center; border-radius: 13px; background: var(--navy); color: var(--aqua); font-size: .9rem; font-weight: 800; }
+    .service-card h3 { margin: 20px 0 9px; font-size: 1.18rem; line-height: 1.3; letter-spacing: -.025em; }
+    .service-card p { margin: 0; color: var(--muted); font-size: .96rem; line-height: 1.66; }
+
+    .conditions { background: var(--navy); color: var(--white); }
+    .conditions .section-title { color: var(--white); }
+    .conditions .section-copy { color: #bbc6e1; }
+    .conditions-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 42px; overflow: hidden; border: 1px solid rgba(255,255,255,.13); border-radius: 24px; background: rgba(255,255,255,.13); }
+    .condition-card { min-width: 0; padding: 24px; background: #18214b; }
+    .condition-card h3 { margin: 0; color: var(--white); font-size: 1.05rem; }
+    .condition-card p { margin: 7px 0 0; color: #91a0c4; font-size: .86rem; }
+
+    .ages-intro { max-width: 720px; }
+    .ages-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 38px; }
+    .age-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: var(--white); }
+    .age-image { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #dfe7f5; }
+    .age-card-body { padding: 22px 22px 25px; }
+    .age-card h3 { margin: 0; font-size: 1.22rem; letter-spacing: -.025em; }
+    .age-card p { margin: 10px 0 0; color: var(--muted); font-size: .93rem; line-height: 1.6; }
+
+    .provider-section { background: var(--pale); }
+    .provider-grid { display: grid; grid-template-columns: minmax(260px, .7fr) minmax(0, 1.3fr); gap: clamp(36px, 7vw, 92px); align-items: center; }
+    .provider-visual { min-height: 360px; position: relative; overflow: hidden; border-radius: 28px; background: linear-gradient(145deg, var(--navy), var(--blue)); }
+    .provider-orbit { position: absolute; inset: 50% auto auto 50%; width: 230px; height: 230px; transform: translate(-50%, -50%); border: 2px solid rgba(76,224,210,.55); border-radius: 50%; }
+    .provider-orbit::before, .provider-orbit::after { position: absolute; border-radius: 50%; content: ""; }
+    .provider-orbit::before { inset: 42px; border: 2px solid rgba(255,255,255,.52); }
+    .provider-orbit::after { width: 58px; height: 58px; left: 84px; top: 84px; background: var(--aqua); box-shadow: 0 0 0 18px rgba(76,224,210,.13); }
+    .provider-label { position: absolute; left: 24px; right: 24px; bottom: 24px; padding: 14px 16px; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; background: rgba(255,255,255,.09); color: var(--white); font-size: .86rem; font-weight: 700; backdrop-filter: blur(8px); }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 9px; margin: 26px 0 30px; }
+    .tag { padding: 8px 14px; border: 1px solid #d9e1ef; border-radius: 999px; background: var(--white); font-size: .84rem; font-weight: 700; }
+
+    .steps-grid, .payment-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .step-card { min-width: 0; padding: 28px 25px; border: 1px solid var(--line); border-radius: 20px; }
+    .step-label { color: var(--blue); font-size: .75rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .step-card h3 { margin: 11px 0 8px; font-size: 1.27rem; letter-spacing: -.025em; }
+    .step-card p, .payment-card p { margin: 0; color: var(--muted); font-size: .94rem; line-height: 1.65; }
+    .payment-grid { margin-top: 16px; }
+    .payment-card { min-width: 0; padding: 24px 25px; border-radius: 20px; }
+    .payment-card h3 { margin: 0 0 8px; font-size: .76rem; letter-spacing: .15em; text-transform: uppercase; }
+    .payment-card.insurance { background: var(--sky); }
+    .payment-card.self-pay { background: var(--aqua); }
+    .payment-card.verification { background: var(--navy); color: var(--white); }
+    .payment-card.insurance p, .payment-card.self-pay p { color: var(--navy); }
+    .payment-card.verification h3 { color: var(--aqua); }
+    .payment-card.verification p { color: #dce3f5; }
+
+    .faq-grid { display: grid; grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr); gap: clamp(34px, 6vw, 78px); align-items: start; }
+    .faq-list { display: grid; gap: 10px; }
+    .faq-item { overflow: hidden; border: 1px solid var(--line); border-radius: 15px; }
+    .faq-question { width: 100%; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; border: 0; background: var(--white); color: var(--navy); cursor: pointer; text-align: left; font-size: 1.03rem; font-weight: 750; }
+    .faq-question:hover { background: #fbfcff; }
+    .faq-sign { flex: 0 0 auto; color: var(--blue); font-size: 1.55rem; font-weight: 400; }
+    .faq-answer { margin: 0; padding: 0 22px 20px; color: var(--muted); font-size: .96rem; line-height: 1.68; }
+
+    .booking-wrap { padding: 0 var(--gutter) clamp(30px, 5vw, 56px); }
+    .booking {
+      display: grid;
+      grid-template-columns: minmax(0, 1.03fr) minmax(360px, .97fr);
+      gap: clamp(36px, 6vw, 72px);
+      align-items: center;
+      padding: clamp(36px, 6vw, 72px);
+      border-radius: 30px;
+      background: linear-gradient(140deg, var(--navy), var(--blue));
+      color: var(--white);
+    }
+    .booking .section-title { color: var(--white); }
+    .booking-copy { margin: 18px 0 0; max-width: 50ch; color: #dce3f5; font-size: 1.04rem; line-height: 1.68; }
+    .widget { min-width: 0; padding: 26px; border-radius: 21px; background: var(--white); color: var(--navy); }
+    .widget-label { display: block; margin-bottom: 14px; color: var(--muted); font: 700 .7rem ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; text-transform: uppercase; }
+    .widget-fields { display: grid; gap: 9px; }
+    .booking-row { min-width: 0; display: flex; justify-content: space-between; gap: 16px; padding: 14px 16px; border-radius: 11px; background: var(--pale); font-size: .9rem; font-weight: 750; }
+    .booking-row span { min-width: 0; color: var(--muted); font-weight: 550; text-align: right; overflow-wrap: anywhere; }
+    .widget-note { margin: 15px 0 0; color: var(--muted); font-size: .79rem; line-height: 1.55; }
+
+    .site-footer { background: var(--navy); color: var(--white); }
+    .crisis { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; padding: 20px 23px; border: 1px solid rgba(76,224,210,.34); border-radius: 17px; background: rgba(76,224,210,.08); }
+    .crisis strong { color: var(--aqua); }
+    .crisis span { max-width: 82ch; color: #dce3f5; font-size: .94rem; line-height: 1.62; }
+    .footer-grid { display: grid; grid-template-columns: 1.45fr repeat(3, 1fr); gap: 36px; margin-top: 46px; }
+    .footer-about p { max-width: 34ch; margin: 17px 0 0; color: #a8b5d6; font-size: .92rem; line-height: 1.65; }
+    .footer-column { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; color: #a8b5d6; font-size: .9rem; }
+    .footer-heading { margin-bottom: 4px; color: #8fa0c9; font-size: .7rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .footer-column a { min-height: 34px; display: inline-flex; align-items: center; color: #dce3f5; overflow-wrap: anywhere; }
+    .footer-column a:hover { color: var(--aqua); }
+    .footer-bottom { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 42px; padding-top: 21px; border-top: 1px solid rgba(255,255,255,.12); color: #8fa0c9; font-size: .8rem; }
+    .footer-bottom a { color: #a8b5d6; }
+    .disclaimer { max-width: 96ch; margin: 20px 0 0; color: #7180aa; font-size: .78rem; line-height: 1.65; }
+
+    @media (max-width: 1100px) {
+      .desktop-nav, .header-actions { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .hero-grid, .provider-grid, .booking { grid-template-columns: 1fr; }
+      .hero-copy { max-width: 58ch; }
+      .hero-visual { max-width: 620px; margin-inline: auto; }
+      .services-grid, .ages-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .booking { gap: 38px; }
+      .widget { max-width: 680px; }
+    }
+
+    @media (max-width: 900px) {
+      :root { --gutter: 24px; }
+      .care-grid, .faq-grid { grid-template-columns: 1fr; }
+      .section { padding-block: 72px; }
+      .care-panel { min-height: 0; }
+      .conditions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .steps-grid, .payment-grid, .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero-title { font-size: clamp(3rem, 10vw, 4.8rem); }
+      .footer-about { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 640px) {
+      :root { --gutter: 18px; }
+      .section { padding-block: 58px; }
+      .notice .container { font-size: .78rem; }
+      .nav-row { min-height: 70px; }
+      .brand-mark { width: 40px; height: 40px; }
+      .brand-name { font-size: 1rem; }
+      .brand-subtitle { font-size: .58rem; }
+      .mobile-menu-actions { grid-template-columns: 1fr; }
+      .hero-grid { gap: 40px; padding-block: 52px 66px; }
+      .hero-title { font-size: clamp(2.7rem, 13vw, 4rem); }
+      .hero-copy { font-size: 1rem; }
+      .hero-actions > *, .booking-actions > * { width: 100%; text-align: center; }
+      .stat-grid { width: 100%; grid-template-columns: 1fr; gap: 15px; }
+      .stat-grid > div { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; }
+      .continuity-card { left: 12px; right: 12px; max-width: none; }
+      .section-head { align-items: flex-start; flex-direction: column; margin-bottom: 28px; }
+      .care-tabs { width: 100%; }
+      .care-tab { flex: 1; padding-inline: 12px; }
+      .services-grid, .conditions-grid, .ages-grid, .steps-grid, .payment-grid, .footer-grid { grid-template-columns: 1fr; }
+      .provider-visual { min-height: 300px; }
+      .booking-wrap { padding-inline: 0; padding-bottom: 0; }
+      .booking { padding: 48px 18px; border-radius: 0; }
+      .widget { padding: 20px 16px; }
+      .booking-row { align-items: flex-start; flex-direction: column; gap: 5px; }
+      .booking-row span { text-align: left; }
+      .footer-about { grid-column: auto; }
+      .site-footer .section { padding-bottom: 36px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="page-shell">
+    <header>
+      <div class="notice">
+        <div class="container">
+          <span class="notice-status">Accepting new patients — in-person and telehealth</span>
+          <a href="#book">Request an appointment →</a>
+        </div>
+      </div>
+      <div class="header-shell">
+        <div class="container nav-row">
+          <a class="brand" href="#top" aria-label="Renaissance Psychiatry home">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12.5" stroke="#fff" stroke-width="2.6" stroke-dasharray="46 32" stroke-linecap="round"/><circle cx="16" cy="16" r="4.5" fill="#141b41"/></svg>
+            </span>
+            <span class="brand-copy"><span class="brand-name">Renaissance</span><span class="brand-subtitle">Psychiatry LLC</span></span>
+          </a>
+          <nav class="desktop-nav" aria-label="Primary navigation">
+            <a href="#about">About</a><a href="#services">Services</a><a href="#conditions">Conditions</a><a href="#providers">Providers</a><a href="#patients">Patient info</a><a href="#contact">Contact</a>
+          </nav>
+          <div class="header-actions">
+            <a class="btn btn-outline" href="#patients">Patient Portal</a>
+            <a class="btn btn-primary" href="#book">Book Appointment</a>
+          </div>
+          <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open navigation menu">
+            <span class="menu-toggle-lines" aria-hidden="true"></span>
+          </button>
+        </div>
+        <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation" hidden>
+          <div class="container mobile-menu-inner">
+            <a href="#about">About</a><a href="#services">Services</a><a href="#conditions">Conditions</a><a href="#providers">Providers</a><a href="#patients">Patient info</a><a href="#contact">Contact</a>
+            <div class="mobile-menu-actions"><a class="btn btn-outline" href="#patients">Patient Portal</a><a class="btn btn-primary" href="#book">Book Appointment</a></div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="container hero-grid">
+          <div>
+            <span class="hero-badge">Outpatient psychiatry · All ages</span>
+            <h1 class="hero-title">Psychiatric care for every <span>stage of life</span>.</h1>
+            <p class="hero-copy">Evaluations, medication management and psychotherapy — in the office or by secure video. We listen before developing a treatment plan.</p>
+            <div class="hero-actions"><a class="btn btn-primary" href="#book">Book an Appointment</a><a class="btn btn-outline" href="#providers">Meet Our Providers</a></div>
+            <div class="stat-grid" aria-label="Practice highlights">
+              <div><p class="stat-value">All ages</p><p class="stat-label">Children to older adults</p></div>
+              <div><p class="stat-value">2 formats</p><p class="stat-label">In-person &amp; telehealth</p></div>
+              <div><p class="stat-value">1 day</p><p class="stat-label">Typical response time</p></div>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="image-frame hero-image">
+              <img class="hero-image" src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&amp;fit=crop&amp;w=1100&amp;q=84" alt="Clinician listening attentively during a patient conversation" decoding="async" fetchpriority="high">
+            </div>
+            <div class="continuity-card"><span class="continuity-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#141b41" stroke-width="2"><path d="M12 21s-7-4.4-7-11a4 4 0 0 1 7-2.7A4 4 0 0 1 19 10c0 6.6-7 11-7 11Z"/></svg></span><span>Same provider across therapy and medication</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="about">
+        <div class="container care-grid">
+          <div>
+            <span class="eyebrow">Flexible care</span>
+            <h2 class="section-title">Two ways to be seen</h2>
+            <p class="section-copy">Same evaluation, same provider continuity. Choose the format that fits your life.</p>
+            <div class="care-tabs" role="tablist" aria-label="Appointment format">
+              <button class="care-tab" id="tab-person" role="tab" type="button" aria-selected="true" aria-controls="panel-person" tabindex="0">In-person</button>
+              <button class="care-tab" id="tab-tele" role="tab" type="button" aria-selected="false" aria-controls="panel-tele" tabindex="-1">Telehealth</button>
+            </div>
+          </div>
+          <div>
+            <div class="care-panel" id="panel-person" role="tabpanel" aria-labelledby="tab-person">
+              <h3>In-person appointments</h3><p>Evaluations, follow-ups and therapy in a quiet, accessible office designed to feel unlike a clinic.</p>
+              <ul class="check-list"><li>Longer initial evaluations with unhurried conversation</li><li>Accessible entrance, seating and treatment rooms</li><li>Same provider across evaluation, medication and therapy</li><li>Evening appointments available</li></ul>
+            </div>
+            <div class="care-panel" id="panel-tele" role="tabpanel" aria-labelledby="tab-tele" hidden>
+              <h3>Telehealth appointments</h3><p>Secure video visits from home, work or school, for patients located in the states where our providers are licensed.</p>
+              <ul class="check-list"><li>Evaluations, medication follow-ups and psychotherapy by video</li><li>A private space and a reliable connection are all you need</li><li>You must be in a state where your provider is licensed</li><li>Some appointments may require an in-person visit</li></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="services">
+        <div class="container">
+          <div class="section-head"><div><span class="eyebrow">How we help</span><h2 class="section-title">Evidence-based outpatient psychiatry</h2></div><a class="text-link" href="#book">Request an appointment →</a></div>
+          <div class="services-grid">
+            <article class="service-card"><span class="service-number">01</span><h3>Initial psychiatric evaluation</h3><p>A longer first appointment to understand your history, symptoms and goals before any plan is made.</p></article>
+            <article class="service-card"><span class="service-number">02</span><h3>Medication management</h3><p>Your provider will discuss whether medication is appropriate, then monitor response and side effects.</p></article>
+            <article class="service-card"><span class="service-number">03</span><h3>Psychotherapy</h3><p>Structured talk therapy on its own or alongside medication, with a provider who knows your history.</p></article>
+            <article class="service-card"><span class="service-number">04</span><h3>Telepsychiatry</h3><p>Secure video appointments for evaluations, follow-ups and therapy when the office is not practical.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section conditions" id="conditions">
+        <div class="container">
+          <span class="eyebrow" style="color:#4ce0d2">Thoughtful, individualized care</span><h2 class="section-title">Conditions we commonly treat</h2><p class="section-copy">Diagnosis is the beginning of a conversation, not the whole story. Treatment is tailored to your needs, history and goals.</p>
+          <div class="conditions-grid">
+            <article class="condition-card"><h3>ADHD</h3><p>Children through adults</p></article><article class="condition-card"><h3>Anxiety disorders</h3><p>Full anxiety spectrum</p></article><article class="condition-card"><h3>Depression</h3><p>Depressive spectrum</p></article><article class="condition-card"><h3>PTSD &amp; trauma</h3><p>Trauma-related conditions</p></article><article class="condition-card"><h3>Bipolar disorder</h3><p>Mood stabilization</p></article><article class="condition-card"><h3>Schizophrenia</h3><p>Psychotic spectrum</p></article><article class="condition-card"><h3>OCD</h3><p>Obsessive-compulsive concerns</p></article><article class="condition-card"><h3>Panic disorder</h3><p>Panic and phobias</p></article><article class="condition-card"><h3>Sleep concerns</h3><p>When tied to a diagnosis</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="ages-title">
+        <div class="container">
+          <div class="ages-intro"><span class="eyebrow">Across the lifespan</span><h2 class="section-title" id="ages-title">Care that meets people where they are</h2><p class="section-copy">Each stage of life brings different pressures, relationships and treatment considerations.</p></div>
+          <div class="ages-grid">
+            <article class="age-card"><img class="age-image" src="https://images.unsplash.com/photo-1624448445915-97154f5e688c?auto=format&amp;fit=crop&amp;w=800&amp;q=82" alt="Parent and young child sharing a warm moment at home" loading="lazy" decoding="async"><div class="age-card-body"><h3>Children</h3><p>Assessment with guardian involvement and school-aware care.</p></div></article>
+            <article class="age-card"><img class="age-image" src="https://images.unsplash.com/photo-1655161903556-f3379ad51fee?auto=format&amp;fit=crop&amp;w=800&amp;q=82" alt="Young person smiling outdoors in natural light" loading="lazy" decoding="async"><div class="age-card-body"><h3>Adolescents</h3><p>Confidential, developmentally appropriate conversation.</p></div></article>
+            <article class="age-card"><img class="age-image" src="https://images.unsplash.com/photo-1663550910287-0c92a030feab?auto=format&amp;fit=crop&amp;w=800&amp;q=82" alt="Adult smiling confidently in a relaxed outdoor setting" loading="lazy" decoding="async"><div class="age-card-body"><h3>Adults</h3><p>Evaluation, medication management and psychotherapy.</p></div></article>
+            <article class="age-card"><img class="age-image" src="https://images.unsplash.com/photo-1695556746353-b45f7a329777?auto=format&amp;fit=crop&amp;w=800&amp;q=82" alt="Older adult with white hair smiling in soft daylight" loading="lazy" decoding="async"><div class="age-card-body"><h3>Older adults</h3><p>Careful review of medications, memory and mood.</p></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section provider-section" id="providers">
+        <div class="container provider-grid">
+          <div class="provider-visual" aria-hidden="true"><div class="provider-orbit"></div><div class="provider-label">One clear profile for credentials, care focus and availability</div></div>
+          <div><span class="eyebrow">Choose with confidence</span><h2 class="section-title">Find the provider who fits</h2><p class="section-copy">Every profile lists credentials, licensed states, age groups served, languages spoken and appointment formats — so you can choose with confidence before you book.</p><div class="tag-list"><span class="tag">Board-certified</span><span class="tag">Licensed in multiple states</span><span class="tag">All ages</span><span class="tag">Spanish spoken</span><span class="tag">In-person &amp; telehealth</span></div><a class="btn btn-blue" href="#providers">View provider directory</a></div>
+        </div>
+      </section>
+
+      <section class="section" id="patients">
+        <div class="container">
+          <div class="section-head"><div><span class="eyebrow">New patients</span><h2 class="section-title">Getting started takes three steps</h2></div><p class="section-copy">Most appointment requests receive a response within one business day.</p></div>
+          <div class="steps-grid">
+            <article class="step-card"><span class="step-label">Step one</span><h3>Request an appointment</h3><p>Book online in a few minutes or call the office during business hours.</p></article><article class="step-card"><span class="step-label">Step two</span><h3>Complete secure forms</h3><p>You will receive a link to confidential intake forms and consents to finish before your visit.</p></article><article class="step-card"><span class="step-label">Step three</span><h3>Get confirmation</h3><p>We confirm your appointment, verify insurance and send instructions for the office or video visit.</p></article>
+          </div>
+          <div class="payment-grid"><article class="payment-card insurance"><h3>Insurance</h3><p>We accept several major plans. Coverage depends on your provider and your plan.</p></article><article class="payment-card self-pay"><h3>Self-pay</h3><p>Transparent rates per service, with a Good Faith Estimate on request.</p></article><article class="payment-card verification"><h3>Verification</h3><p>Send your insurance details before the first visit and we confirm benefits with you.</p></article></div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="faq-title">
+        <div class="container faq-grid">
+          <div><span class="eyebrow">Helpful details</span><h2 class="section-title" id="faq-title">Common questions</h2></div>
+          <div class="faq-list">
+            <article class="faq-item"><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-1"><span>Do you treat children?</span><span class="faq-sign" aria-hidden="true">+</span></button><p class="faq-answer" id="faq-1" hidden>Yes. We see children, adolescents, adults and older adults. For minors, a parent or guardian participates in the evaluation and treatment planning.</p></article>
+            <article class="faq-item"><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-2"><span>Do you take insurance?</span><span class="faq-sign" aria-hidden="true">+</span></button><p class="faq-answer" id="faq-2" hidden>We accept several major plans, and we also offer self-pay rates. Coverage depends on your provider and your specific plan, so we verify benefits before your first visit.</p></article>
+            <article class="faq-item"><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-3"><span>Is telehealth the same as an office visit?</span><span class="faq-sign" aria-hidden="true">+</span></button><p class="faq-answer" id="faq-3" hidden>Clinically, yes for most appointments. Some assessments or medications may require an in-person visit, and your provider will tell you if that applies.</p></article>
+            <article class="faq-item"><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-4"><span>What happens at the first appointment?</span><span class="faq-sign" aria-hidden="true">+</span></button><p class="faq-answer" id="faq-4" hidden>A longer conversation about your history, symptoms and goals. We listen before developing a treatment plan, and no medication decision is made without discussing it with you.</p></article>
+            <article class="faq-item"><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-5"><span>Can I request a prescription refill online?</span><span class="faq-sign" aria-hidden="true">+</span></button><p class="faq-answer" id="faq-5" hidden>Not through this website. Refill requests go through the patient portal or your pharmacy so they reach your provider securely.</p></article>
+            <article class="faq-item"><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-6"><span>How long until I am seen?</span><span class="faq-sign" aria-hidden="true">+</span></button><p class="faq-answer" id="faq-6" hidden>Most appointment requests receive a response within one business day, and current new-patient availability is noted at the top of this page.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="booking-wrap" id="book" aria-labelledby="booking-title">
+        <div class="booking">
+          <div><span class="eyebrow" style="color:#4ce0d2">Take the next step</span><h2 class="section-title" id="booking-title">Request an appointment</h2><p class="booking-copy">Choose in-person or telehealth, pick a service and provider, then complete secure intake forms online.</p><div class="booking-actions"><a class="btn btn-primary" href="#book">Book online</a><a class="btn btn-outline" href="tel:+10000000000">Call the office</a></div></div>
+          <div class="widget" aria-label="Booking widget preview"><span class="widget-label">IntakeQ booking widget</span><div class="widget-fields"><div class="booking-row">Appointment type <span>In-person / Telehealth</span></div><div class="booking-row">Service <span>Select</span></div><div class="booking-row">Provider <span>Any available</span></div><div class="booking-row">Date &amp; time <span>Choose</span></div></div><p class="widget-note">Existing patient? Use the patient portal. In an emergency, call 911 or call or text 988.</p></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="container section">
+        <div class="crisis"><strong>In a crisis</strong><span>Call 911 if there is immediate danger, or call or text 988 for the Suicide &amp; Crisis Lifeline. Messages sent through this website are not monitored for emergencies.</span></div>
+        <div class="footer-grid">
+          <div class="footer-about"><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12.5" stroke="#fff" stroke-width="2.6" stroke-dasharray="46 32" stroke-linecap="round"/><circle cx="16" cy="16" r="4.5" fill="#141b41"/></svg></span><span class="brand-copy"><span class="brand-name">Renaissance</span><span class="brand-subtitle">Psychiatry LLC</span></span></a><p>Outpatient psychiatric care for children, adolescents, adults and older adults. In-person and telehealth.</p></div>
+          <nav class="footer-column" aria-label="Care links"><span class="footer-heading">Care</span><a href="#services">Services</a><a href="#conditions">Conditions</a><a href="#providers">Providers</a><a href="#patients">New patients</a></nav>
+          <nav class="footer-column" aria-label="Patient links"><span class="footer-heading">Patients</span><a href="#patients">Patient portal</a><a href="#patients">Insurance &amp; payment</a><a href="#book">Book an appointment</a><a href="#contact">Contact</a></nav>
+          <div class="footer-column"><span class="footer-heading">Office</span><a href="tel:+10000000000">(000) 000-0000</a><a href="mailto:office@renaissancepsychiatry.com">office@renaissancepsychiatry.com</a><span>Mon–Fri, 9am–6pm</span><span>Address to be confirmed</span></div>
+        </div>
+        <div class="footer-bottom"><span>© 2026 Renaissance Psychiatry LLC</span><a href="#contact">HIPAA Notice of Privacy Practices</a><a href="#contact">Privacy Policy</a><a href="#contact">Terms of Use</a><a href="#contact">Accessibility Statement</a></div>
+        <p class="disclaimer">This website is for general information only and does not provide medical advice. Age groups, services and licensed states are pending clinical confirmation before publication.</p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
