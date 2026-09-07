@@ -62,6 +62,39 @@
       }
     });
 
+    check('sends every booking call to action to the cal.com page', async (doc) => {
+      const BOOKING_URL = 'https://cal.com/ikechukwu-enyolu-45gafv/15min';
+      const booking = [...doc.querySelectorAll(`a[href="${BOOKING_URL}"]`)];
+      assert(booking.length >= 12,
+        `expected the booking CTAs to point at cal.com, found ${booking.length}`);
+
+      // The header, hero, services, conditions, providers and booking sections
+      // must each offer a way through to the scheduler.
+      for (const selector of ['.nav .btn-book', '.nav__mobile .btn-book', '.hero .btn-primary',
+                              '#services .link-arrow', '#services .service',
+                              '#conditions .link-arrow', '#providers .btn-dark',
+                              '#book .btn-dark', '#book .btn-mint']) {
+        const el = doc.querySelector(selector);
+        assert(el, `missing booking CTA ${selector}`);
+        assert(el.getAttribute('href') === BOOKING_URL,
+          `${selector} points at ${el.getAttribute('href')} instead of the scheduler`);
+      }
+
+      for (const link of booking) {
+        assert(link.target === '_blank', 'booking links should open in a new tab');
+        const rel = (link.getAttribute('rel') || '').split(/\s+/);
+        assert(rel.includes('noopener'), 'booking links need rel="noopener"');
+      }
+    });
+
+    check('never labels a cal.com link as the patient portal', async (doc) => {
+      const booking = [...doc.querySelectorAll('a[href*="cal.com"]')];
+      for (const link of booking) {
+        assert(!/portal/i.test(link.textContent),
+          `"${link.textContent.trim()}" links to cal.com but is labelled as the portal`);
+      }
+    });
+
     check('ships local photographs with dimensions and lazy loading', async (doc) => {
       const images = [...doc.images];
       assert(images.length >= 8, `expected at least eight photographs, found ${images.length}`);
