@@ -15,7 +15,7 @@
     #results li { padding: 12px 14px; border-radius: 8px; background: #fff; }
     #results .pass { border-left: 5px solid #10a978; }
     #results .fail { border-left: 5px solid #d94b45; }
-    #site { width: 390px; height: 720px; border: 1px solid #ccd4e5; background: #fff; }
+    #site { width: 1280px; height: 760px; border: 1px solid #ccd4e5; background: #fff; }
   </style>
 </head>
 <body>
@@ -30,6 +30,18 @@
     const assert = (condition, message) => {
       if (!condition) throw new Error(message);
     };
+    // Timer-based, not rAF-based: rAF is frozen in a backgrounded tab, and
+    // these tests must run the same whether or not the page is on screen.
+    const tick = (ms = 40) => new Promise(resolve => setTimeout(resolve, ms));
+    const settle = () => tick(60);
+    const waitFor = async (predicate, message, timeout = 2000) => {
+      const deadline = Date.now() + timeout;
+      while (Date.now() < deadline) {
+        if (predicate()) return;
+        await tick(30);
+      }
+      throw new Error(message);
+    };
 
     check('renders required semantic landmarks and sections', async (doc) => {
       assert(doc.querySelector('header'), 'missing header');
@@ -40,70 +52,197 @@
       }
     });
 
-    check('uses stable, accessible Unsplash photographs', async (doc) => {
+    check('every navigation target resolves to a section on the page', async (doc) => {
+      const hashes = [...doc.querySelectorAll('a[href^="#"]')]
+        .map(link => link.getAttribute('href'))
+        .filter(href => href.length > 1);
+      assert(hashes.length > 0, 'expected in-page navigation links');
+      for (const href of new Set(hashes)) {
+        assert(doc.querySelector(href), `nav link points at missing target ${href}`);
+      }
+    });
+
+    check('ships local photographs with dimensions and lazy loading', async (doc) => {
       const images = [...doc.images];
-      assert(images.length >= 5, 'expected at least five photographs');
+      assert(images.length >= 8, `expected at least eight photographs, found ${images.length}`);
       images.forEach((image, index) => {
-        assert(image.src.startsWith('https://images.unsplash.com/'), `image ${index + 1} is not a stable Unsplash URL`);
-        assert(image.alt.trim(), `image ${index + 1} has no alt text`);
-        if (index > 0) assert(image.loading === 'lazy', `image ${index + 1} should lazy-load`);
+        const src = image.getAttribute('src') || '';
+        assert(src.startsWith('assets/'), `image ${index + 1} is not served from assets/ (${src})`);
+        assert(image.getAttribute('width') && image.getAttribute('height'),
+          `image ${index + 1} is missing intrinsic dimensions`);
+      });
+      const firstSlide = doc.querySelector('.hero__slide');
+      assert(firstSlide.getAttribute('fetchpriority') === 'high', 'first hero slide should be eager');
+      const lazy = images.filter(image => image.loading === 'lazy');
+      assert(lazy.length >= images.length - 1, 'images after the first should lazy-load');
+    });
+
+    check('labels meaningful images and hides decorative ones', async (doc) => {
+      for (const image of doc.images) {
+        const decorative = image.alt === '';
+        if (decorative) {
+          assert(image.closest('[aria-hidden="true"]') || image.getAttribute('aria-hidden') === 'true',
+            `decorative image ${image.getAttribute('src')} is not hidden from assistive tech`);
+        } else {
+          assert(image.alt.trim().length > 8,
+            `image ${image.getAttribute('src')} has no meaningful alt text`);
+        }
+      }
+    });
+
+    check('builds the hero carousel with one active slide and matching dots', async (doc) => {
+      const slides = [...doc.querySelectorAll('.hero__slide')];
+      const dots = [...doc.querySelectorAll('#heroDots button')];
+      assert(slides.length === 6, `expected six hero slides, found ${slides.length}`);
+      assert(dots.length === slides.length, 'dot count does not match slide count');
+      assert(slides.filter(s => s.classList.contains('is-current')).length === 1,
+        'exactly one slide should be current');
+      assert(dots.filter(d => d.getAttribute('aria-current') === 'true').length === 1,
+        'exactly one dot should be marked current');
+      dots.forEach((dot, index) => {
+        assert(dot.getAttribute('aria-label'), `dot ${index + 1} has no accessible name`);
       });
     });
 
-    check('describes the adolescent photograph as student or teen imagery', async (doc) => {
-      const card = [...doc.querySelectorAll('.age-card')]
-        .find(item => item.querySelector('h3')?.textContent.trim() === 'Adolescents');
-      assert(card, 'adolescent card missing');
-      assert(/student|teen|adolesc/i.test(card.querySelector('img')?.alt ?? ''),
-        'adolescent image description does not match its life stage');
-    });
-
-    check('gives the hero photograph an accurate telehealth description', async (doc) => {
-      const hero = doc.querySelector('.hero-image img');
-      assert(hero, 'hero photograph missing');
-      assert(/phone|smartphone|telehealth|video/i.test(hero.alt),
-        'hero alt text does not describe the clinician using a phone');
+    check('changes the hero slide when a dot is clicked', async (doc) => {
+      const slides = [...doc.querySelectorAll('.hero__slide')];
+      const dots = [...doc.querySelectorAll('#heroDots button')];
+      const startIndex = slides.findIndex(s => s.classList.contains('is-current'));
+      const target = startIndex === 3 ? 4 : 3;
+      dots[target].click();
+      await waitFor(() => slides[target].classList.contains('is-current'),
+        'clicked slide did not become current');
+      assert(dots[target].getAttribute('aria-current') === 'true', 'clicked dot was not marked current');
+      assert(slides[startIndex].classList.contains('is-prev'), 'previous slide was not marked for cross-fade');
     });
 
     check('opens and closes the mobile menu', async (doc) => {
-      const button = doc.querySelector('#menu-toggle');
-      const menu = doc.querySelector('#mobile-menu');
+      const button = doc.querySelector('#navToggle');
+      const menu = doc.querySelector('#navMobile');
       assert(button && menu, 'mobile menu controls missing');
-      assert(button.getAttribute('aria-expanded') === 'false' && menu.hidden, 'menu should start closed');
+      assert(button.getAttribute('aria-controls') === 'navMobile', 'toggle does not control the menu');
+      assert(button.getAttribute('aria-expanded') === 'false' && !menu.classList.contains('is-open'),
+        'menu should start closed');
       button.click();
-      assert(button.getAttribute('aria-expanded') === 'true' && !menu.hidden, 'menu did not open');
+      assert(button.getAttribute('aria-expanded') === 'true' && menu.classList.contains('is-open'),
+        'menu did not open');
       doc.dispatchEvent(new doc.defaultView.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      assert(button.getAttribute('aria-expanded') === 'false' && menu.hidden, 'Escape did not close menu');
+      assert(button.getAttribute('aria-expanded') === 'false' && !menu.classList.contains('is-open'),
+        'Escape did not close menu');
     });
 
-    check('switches care tabs with pointer and keyboard', async (doc) => {
-      const tabs = [...doc.querySelectorAll('[role="tab"]')];
-      assert(tabs.length === 2, 'expected two care tabs');
-      tabs[1].click();
-      assert(tabs[1].getAttribute('aria-selected') === 'true', 'telehealth tab did not activate');
-      assert(!doc.getElementById(tabs[1].getAttribute('aria-controls')).hidden, 'telehealth panel stayed hidden');
-      tabs[1].dispatchEvent(new doc.defaultView.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
-      assert(tabs[0].getAttribute('aria-selected') === 'true', 'ArrowLeft did not return to in-person tab');
+    check('closes the mobile menu after following a link', async (doc) => {
+      const button = doc.querySelector('#navToggle');
+      const menu = doc.querySelector('#navMobile');
+      button.click();
+      assert(menu.classList.contains('is-open'), 'menu did not open');
+      menu.querySelector('a').click();
+      assert(button.getAttribute('aria-expanded') === 'false' && !menu.classList.contains('is-open'),
+        'menu stayed open after navigating');
     });
 
     check('toggles an FAQ answer and its ARIA state', async (doc) => {
-      const button = doc.querySelector('.faq-question');
+      const button = doc.querySelector('.faq__q');
       assert(button, 'FAQ button missing');
       const answer = doc.getElementById(button.getAttribute('aria-controls'));
-      assert(button.getAttribute('aria-expanded') === 'false' && answer.hidden, 'FAQ should start closed');
+      assert(button.getAttribute('aria-expanded') === 'false' && !answer.classList.contains('is-open'),
+        'FAQ should start closed');
       button.click();
-      assert(button.getAttribute('aria-expanded') === 'true' && !answer.hidden, 'FAQ did not open');
+      assert(button.getAttribute('aria-expanded') === 'true' && answer.classList.contains('is-open'),
+        'FAQ did not open');
       button.click();
-      assert(button.getAttribute('aria-expanded') === 'false' && answer.hidden, 'FAQ did not close');
+      assert(button.getAttribute('aria-expanded') === 'false' && !answer.classList.contains('is-open'),
+        'FAQ did not close');
     });
 
-    check('has no horizontal overflow at phone width', async (doc, frame) => {
+    check('keeps only one FAQ answer open at a time', async (doc) => {
+      const buttons = [...doc.querySelectorAll('.faq__q')];
+      assert(buttons.length === 6, `expected six questions, found ${buttons.length}`);
+      buttons[0].click();
+      buttons[2].click();
+      const open = buttons.filter(b => b.getAttribute('aria-expanded') === 'true');
+      assert(open.length === 1 && open[0] === buttons[2], 'opening a question did not close the previous one');
+      buttons[2].click();
+    });
+
+    check('marks the navigation solid once the page is scrolled', async (doc) => {
+      const view = doc.defaultView;
+      const nav = doc.querySelector('#nav');
+      const progress = doc.querySelector('#progress');
+      assert(!nav.classList.contains('is-solid'), 'nav should start transparent');
+      // Jump rather than smooth-scroll so the assertion does not race the animation.
+      const behavior = doc.documentElement.style.scrollBehavior;
+      doc.documentElement.style.scrollBehavior = 'auto';
+      // Some automation runtimes never dispatch a real scroll event for a frame
+      // they are not painting, so nudge the listener explicitly after moving.
+      const scrollTo = y => {
+        view.scrollTo(0, y);
+        view.dispatchEvent(new view.Event('scroll'));
+      };
+
+      scrollTo(600);
+      await waitFor(() => nav.classList.contains('is-solid'), 'nav did not switch to its solid state');
+      assert(parseFloat(progress.style.width) > 0, 'scroll progress bar did not advance');
+      scrollTo(0);
+      await waitFor(() => !nav.classList.contains('is-solid'), 'nav did not return to transparent at the top');
+      assert(parseFloat(progress.style.width) === 0, 'scroll progress bar did not reset at the top');
+      doc.documentElement.style.scrollBehavior = behavior;
+    });
+
+    check('declares the motion the design depends on', async (doc) => {
+      const sheet = [...doc.styleSheets].find(s => !s.href);
+      const css = [...sheet.cssRules].map(rule => rule.cssText).join('\n');
+      for (const name of ['rpRise', 'rpPulse', 'rpMarquee', 'rpFloat']) {
+        assert(css.includes('@keyframes ' + name), `missing ${name} keyframes`);
+      }
+      assert(css.includes('prefers-reduced-motion'), 'no reduced-motion fallback');
+      assert(doc.querySelectorAll('.marquee__group').length === 2,
+        'marquee needs a duplicated group to loop seamlessly');
+      assert(doc.querySelectorAll('[data-reveal]').length > 10, 'scroll reveals are not wired up');
+    });
+
+    check('has no horizontal overflow at desktop, tablet and phone widths', async (doc, frame) => {
+      for (const width of ['1440px', '1024px', '768px', '390px', '320px']) {
+        frame.style.width = width;
+        await settle();
+        assert(doc.documentElement.scrollWidth <= doc.documentElement.clientWidth + 1,
+          `overflow at ${width}: ${doc.documentElement.scrollWidth}px > ${doc.documentElement.clientWidth}px`);
+      }
+      frame.style.width = '1280px';
+      await settle();
+    });
+
+    check('swaps the desktop nav for the menu button on small screens', async (doc, frame) => {
+      const view = doc.defaultView;
+      const links = doc.querySelector('.nav__links');
+      const toggle = doc.querySelector('#navToggle');
+
+      frame.style.width = '1280px';
+      await settle();
+      assert(view.getComputedStyle(links).display !== 'none', 'desktop nav links are hidden at 1280px');
+      assert(view.getComputedStyle(toggle).display === 'none', 'menu button should be hidden at 1280px');
+
       frame.style.width = '390px';
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      assert(doc.documentElement.scrollWidth <= doc.documentElement.clientWidth + 1,
-        `phone overflow: ${doc.documentElement.scrollWidth}px > ${doc.documentElement.clientWidth}px`);
-      const toggle = doc.querySelector('#menu-toggle');
-      assert(doc.defaultView.getComputedStyle(toggle).display !== 'none', 'mobile menu button is hidden at 390px');
+      await settle();
+      assert(view.getComputedStyle(links).display === 'none', 'desktop nav links still shown at 390px');
+      assert(view.getComputedStyle(toggle).display !== 'none', 'menu button is hidden at 390px');
+
+      frame.style.width = '1280px';
+      await settle();
+    });
+
+    check('keeps tap targets and type legible on a phone', async (doc, frame) => {
+      const view = doc.defaultView;
+      frame.style.width = '390px';
+      await settle();
+      const toggle = doc.querySelector('#navToggle').getBoundingClientRect();
+      assert(toggle.width >= 40 && toggle.height >= 40, 'menu button is smaller than a 40px tap target');
+      const heading = parseFloat(view.getComputedStyle(doc.querySelector('.hero h1')).fontSize);
+      assert(heading > 30 && heading < 60, `hero heading is ${heading}px at phone width`);
+      const body = parseFloat(view.getComputedStyle(doc.querySelector('.hero__lede')).fontSize);
+      assert(body >= 16, `body copy is only ${body}px at phone width`);
+      frame.style.width = '1280px';
+      await settle();
     });
 
     const frame = document.querySelector('#site');
